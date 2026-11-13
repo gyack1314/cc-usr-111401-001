@@ -1,0 +1,36 @@
+{
+  "left": [
+    {
+      "row_id": "l1",
+      "key": "shared",
+      "amount": 2
+    },
+    {
+      "row_id": "l2",
+      "key": "shared",
+      "amount": 3
+    },
+    {
+      "row_id": "l3",
+      "key": null,
+      "amount": 4
+    }
+  ],
+  "right": [
+    {
+      "row_id": "r1",
+      "key": "shared",
+      "team": "a"
+    },
+    {
+      "row_id": "r2",
+      "key": "shared",
+      "team": "b"
+    },
+    {
+      "row_id": "r3",
+      "key": null,
+      "team": "n"
+    }
+  ]
+}
