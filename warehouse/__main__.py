@@ -6,7 +6,13 @@ from .exchange import inspect
 
 def main():
     parser=argparse.ArgumentParser(description='读取并核对本地资料')
-    parser.add_argument('--source',default='data/source.json');args=parser.parse_args()
+    parser.add_argument('--source',default='data/source.json')
+    parser.add_argument('--stage-demo',action='store_true',help='运行可恢复阶段交换演示')
+    args=parser.parse_args()
+    if args.stage_demo:
+        from .stage import demo
+        print(json.dumps(demo(args.source),ensure_ascii=False,sort_keys=True))
+        return
     data=json.loads(Path(args.source).read_text(encoding='utf-8'))
     with tempfile.TemporaryDirectory() as temporary:
         root=Path(temporary);store=ObjectStore(root/'objects')

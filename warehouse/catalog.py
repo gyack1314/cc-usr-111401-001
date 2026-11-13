@@ -23,17 +23,29 @@ class Catalog:
             os.close(fd)
             lock.unlink()
 
+    def _write(self, refs):
+        fd, path = tempfile.mkstemp(dir=self.root, prefix='.refs-')
+        try:
+            with os.fdopen(fd, 'wb') as stream:
+                stream.write(encode(refs)); stream.flush(); os.fsync(stream.fileno())
+            os.replace(path, self.file)
+        finally:
+            if os.path.exists(path): os.unlink(path)
+
     def compare_update(self, name, expected, value):
         with self.locked():
             refs = self.read()
             if refs.get(name) != expected:
                 raise ValueError('目录引用已改变')
             refs[name] = value
-            fd, path = tempfile.mkstemp(dir=self.root, prefix='.refs-')
-            try:
-                with os.fdopen(fd, 'wb') as stream:
-                    stream.write(encode(refs)); stream.flush(); os.fsync(stream.fileno())
-                os.replace(path, self.file)
-            finally:
-                if os.path.exists(path): os.unlink(path)
+            self._write(refs)
         return value
+
+    def remove(self, name, expected):
+        with self.locked():
+            refs = self.read()
+            if refs.get(name) != expected:
+                raise ValueError('目录引用已改变')
+            refs.pop(name, None)
+            self._write(refs)
+        return expected

@@ -5,6 +5,9 @@ import hashlib, json, os, tempfile
 def encode(value):
     return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(',', ':'), allow_nan=False).encode('utf-8')
 
+def _valid(digest):
+    return isinstance(digest,str) and len(digest)==64 and all(c in '0123456789abcdef' for c in digest)
+
 class ObjectStore:
     def __init__(self, root):
         self.root = Path(root)
@@ -32,12 +35,22 @@ class ObjectStore:
         return digest
 
     def get(self, digest):
-        if not isinstance(digest,str) or len(digest)!=64 or any(c not in '0123456789abcdef' for c in digest):
+        if not _valid(digest):
             raise ValueError('对象身份非法')
         raw = (self.root / digest).read_bytes()
         if hashlib.sha256(raw).hexdigest() != digest:
             raise ValueError('对象摘要不符')
         return raw
+
+    def discard(self, digest):
+        """回收对象：删除内容并返回是否存在。"""
+        if not _valid(digest):
+            raise ValueError('对象身份非法')
+        target = self.root / digest
+        if not target.exists():
+            return False
+        target.unlink()
+        return True
 
     def put_json(self, value):
         return self.put(encode(value))

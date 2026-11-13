@@ -18,6 +18,11 @@ class Exchange:
         self.catalog.compare_update(identity,None,value)
         return dict(value,replayed=False)
     def rows(self, receipt):return self.store.json(receipt['digest'])
+    def discard(self, run, side, partition, fragment):
+        identity=hashlib.sha256(encode([run,side,partition,fragment])).hexdigest()
+        current=self.catalog.read().get(identity)
+        if current is not None:self.catalog.remove(identity,current)
+        return current
 
 def inspect(data, store, root):
     service=Exchange(store,root/'exchange')
