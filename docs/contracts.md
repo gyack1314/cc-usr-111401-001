@@ -1,5 +1,5 @@
 # 资料与既有接口约定
 
-交换记录中的 run、side、partition、fragment 共同标识逻辑片段，attempt 是传送尝试，payload_digest 绑定不可变行列表。同身份不同正文是冲突，旧 run 不能加入新 run。row_id 在每侧唯一，业务 key 可重复，payload 是业务列。null_equal 为 true 时两个 null 键匹配，否则不匹配。现有 exchange.py 只登记和读取片段，不执行连接；snapshot.py 提供冻结源文件的校验读取。预算单位为规范 JSON 行的字节数，另登记缓冲区和文件句柄峰值，不把操作系统缓存冒充受控内存。
+交换基础接口的 run、side、partition、fragment 共同标识逻辑片段，attempt 只是传送尝试，digest绑定不可变行列表；side保留left/right名称，仅代表两个生产输入，绝不隐含连接语义。row_id在一个生产通道内唯一，业务值可以重复。data/source.json包含两条合成输入流。新增协议中的每通道序号从0连续递增，完成消息给出最后一个序号，空通道为-1；屏障编号由协调者单调发出，并且下游以屏障编号登记其状态摘要。调度接口由调用者显式驱动，不依赖墙钟sleep。既有Exchange只保存及校验片段，尚未提供消费位置、屏障、背压或回收。
 
-所有资料均为合成，字段、身份及状态按本文解释。源码中的 inspect 入口只读取并核对现有基础接口；不会建立高级查询或仓库管理流程。
+资料均为合成，现有inspect读取并核对基础接口。
